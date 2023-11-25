@@ -16,12 +16,12 @@ namespace AbcParser
         public string Meter { get; set;}
         public decimal NoteLengthProportion { get; set; }
         public string Rhythm { get; set; }
-        public string Key { get; set; }
+        public Key Key { get; set; }
         public string Origin { get; set; }
         public int BPM { get; set; }
 
         public List<int> NoteValues { get; set; } = new List<int>();
-        public List<int> NoteLengths { get; set; } = new List<int>();
+        public List<decimal> NoteLengths { get; set; } = new List<decimal>();
 
 
         public override string ToString()

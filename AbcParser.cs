@@ -1,8 +1,10 @@
-﻿namespace AbcParser
+﻿using System.Security;
+
+namespace AbcParser
 {
     public class AbcParser
     {
-        public static void ParseFromFile(string filePath)
+        public static Song ParseFromFile(string filePath)
         {
             if (File.Exists(filePath) == false)
             {
@@ -76,7 +78,10 @@
                 }
                 else if (line.StartsWith(Constants.IDENTIFIER_KEY))
                 {
-                    song.Key = line.Replace(Constants.IDENTIFIER_KEY, string.Empty).Trim();
+                    // Note that the only purpose of "Key" is to identify accidentals, the actual key is not used.
+                    // For example, C major and it's various modes will result in C major being returned.
+                    string key = line.Replace(Constants.IDENTIFIER_KEY, string.Empty).Trim();
+                    song.Key = Key.FromString(key);
 
                     // Key is always the last header
                     doneHeaders = true;
@@ -95,6 +100,8 @@
                     throw new Exception($"Unable to read line {index}: {line}");
                 }
             }
+
+            return song;
         }
 
         public static void ProcessMusicNotes(Song song, string line)
@@ -103,26 +110,141 @@
             int lastProcessedIndex = 0;
 
             string currentNote = string.Empty;
-            
-            while (lastProcessedIndex< lineLength)
-            {
-                // All options for what each character can be:
-                // ABCDEFG abcdefg , '  --> pitch identifier
-                // ^ _ =  --> accidentals
-                // A number or slash --> modifies the note length
-                // % --> comment
-                // " --> indicates there is a chord, end of chord is next "
-                // | --> new bar
-                // z Z  --> Rest (uses same length modifier as notes)
-                // / --> means the line is done
-            }
 
-            // Use song.NoteLengthProportion to determine what a standard note is. i.e. if NoteLengthProportion is 1/8, then G just means it's 1/8.
-            // G/2 means half, or a 1/16 note. 2G means double, or a 1/4 note.
-            // G/ is short hand for G/2, G//2 is short hand for G/4 
+            while (lastProcessedIndex < lineLength)
+            {
+                char c = line[lastProcessedIndex];
+                // All options for what each character can be:
+
+                // If char is space, process the current rawNote.
+                if (c == ' ')
+                {
+                    ProcessNote(song, currentNote);
+                    lastProcessedIndex++;
+                    currentNote = string.Empty;
+                    continue;
+                }
+
+                // If it's a comment skip the rest of the line, and if it's a back slash, the line is done
+                if (c == '%' || c == '\\')
+                {
+                    break;
+                }
+
+                if (c.IsNote())
+                {
+                    if (currentNote != string.Empty)
+                    {
+                        // If we already have a rawNote being built, and we run into a new rawNote, we should process the current rawNote first.
+                        ProcessNote(song, currentNote);
+                        currentNote = string.Empty;
+                    }
+
+                    currentNote += c;
+                    lastProcessedIndex++;
+                    continue;
+                }
+
+                if (c.IsLengthModifier())
+                {
+                    currentNote += c;
+                    lastProcessedIndex++;
+                    continue;
+                }
+
+                if (c.IsPitchModifier())
+                {
+                    currentNote += c;
+                    lastProcessedIndex++;
+                    continue;
+                }
+
+                if (c == '"')
+                {
+                    // This is a chord. Find the next index of ", and resume parsing after that character.
+                    int lastIndexOfChord = line.IndexOf('"', lastProcessedIndex + 1);
+                    lastProcessedIndex = lastIndexOfChord + 1;
+                    continue;
+                }
+
+                // Indicates a new bar
+                if (c == '|')
+                {
+                    ProcessNote(song, currentNote);
+                    lastProcessedIndex++;
+                    currentNote = string.Empty;
+                    continue;
+                }
+
+                if (c.IsRest())
+                {
+                    // TODO not sure about this one.
+                    currentNote += c;
+                    lastProcessedIndex++;
+                    continue;
+                }
+
+                throw new Exception($"Unknown character encountered: {c}");
+            }
 
             Console.WriteLine("Processing music line: ");
             Console.WriteLine(line);
+        }
+
+        private static void ProcessNote(Song song, string rawNote)
+        {
+            if (string.IsNullOrWhiteSpace(rawNote))
+            {
+                return;
+            }
+
+            Console.WriteLine("Processing: " + rawNote);
+
+            // Possible values are:
+            // Single note (remember pitch)
+            // Note suffixed with length modifiers
+            // Note prefixed with length modifiers
+            // Rest
+
+            // This will return pitch info: letter note, pitch modifiers, accidentals.
+            ProcessedNoteInfo processedNoteInfo = ProcessedNoteInfo.FromRawNote(rawNote);
+
+            if (processedNoteInfo.Note.IsRest())
+            {
+                song.NoteValues.Add(-1);
+                song.NoteLengths.Add(processedNoteInfo.LengthModifier);
+                return;
+            }
+
+            // Take the raw note given.
+            // Determine it's actual note given the songs key (i.e. if key is G, and note is F, bump to F#
+            // Apply Accidentals.
+            // Add on any pitch modifiers (the Note itselves capitalization also matters).
+            // Find the resulting string index in Constants.NOTES.
+
+            Key key = song.Key;
+
+            // Find any accidentals in this key for the found note: i.e. if the note is 'C', do any accidentals start with 'C'.
+            string matchingAccidental = key.Accidentals.FirstOrDefault(a => char.ToUpper(a[0]) == char.ToUpper(processedNoteInfo.Note)) ?? string.Empty;
+
+            string parsedNote = string.IsNullOrEmpty(matchingAccidental) ? processedNoteInfo.Note.ToString() : matchingAccidental;
+
+            if (string.IsNullOrEmpty(processedNoteInfo.Accidentals) == false)
+            {
+                throw new NotImplementedException(); // TODO
+            }
+
+            parsedNote += processedNoteInfo.PitchModifiers;
+
+            int noteValue = Constants.NOTES.IndexOf(parsedNote);
+
+            if (noteValue == -1)
+            {
+                throw new Exception($"Unable to determine note value for: {parsedNote}");
+            }
+
+            song.NoteValues.Add(noteValue);
+            song.NoteLengths.Add(processedNoteInfo.LengthModifier);
         }
 
         public static int NoteToNumber(string note)
