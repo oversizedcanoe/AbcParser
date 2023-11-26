@@ -1,9 +1,8 @@
-﻿using System.Reflection;
-
-namespace AbcParser
+﻿namespace AbcParser
 {
     public static class Constants
     {
+        #region Identifiers for headers
         public const string IDENTIFIER_COMMENT = "%";
         public const string IDENTIFIER_LYRIC = "W:";
         public const string IDENTIFIER_SONG_NUMBER = "X:";
@@ -15,7 +14,13 @@ namespace AbcParser
         public const string IDENTIFIER_KEY = "K:";
         public const string IDENTIFIER_ORIGIN = "O:";
         public const string IDENTIFIER_BPM = "Q:";
+        #endregion
 
+        /// <summary>
+        /// This list is used as a way to translate notes into numbers.
+        /// The numeric representation of the notes can be found by taking their index in this list.
+        /// For example, Constants.Notes.IndexOf("c") returns the numeric representation of middle C.
+        /// </summary>
         public static readonly List<string> NOTES = new List<string>()
         {
             "C,,", // Three octaves below middle C
@@ -92,7 +97,13 @@ namespace AbcParser
             "b''"
         };
 
-        public static readonly List<decimal> Tones = new List<decimal>()
+        /// <summary>
+        /// This list is used as a way to translate numeric values of notes into frequencies.
+        /// Using the NOTES list above, tones for specific notes can be found by taking the index of 
+        /// the note in the NOTES list and taking the frequency found at the index in this list.
+        /// This can be used for simple console testing, using an override of <see cref="Console.Beep()"/>
+        /// </summary>
+        public static readonly List<decimal> TONES = new List<decimal>()
         {
             32.70M,
             34.65M,
@@ -130,7 +141,7 @@ namespace AbcParser
             220.00M,
             233.08M,
             246.94M,
-            261.63M, // (Middle C)
+            261.63M, // Middle C
             277.18M,
             293.66M,
             311.13M,
@@ -167,5 +178,49 @@ namespace AbcParser
             1864.66M,
             1975.53M
         };
+
+        /// <summary>
+        /// Enum which contains all possible Keys (excluding modes).
+        /// 's' indicates sharp, 'b' indicates flat, and 'm' indicates minor.
+        /// </summary>
+        public enum KeyEnum
+        {
+            // Major
+            C,
+            Cs,
+            Db,
+            D,
+            Ds,
+            Eb,
+            E,
+            F,
+            Fs,
+            Gb,
+            G,
+            Gs,
+            Ab,
+            A,
+            As,
+            Bb,
+            B,
+            // Minor
+            Cm,
+            Csm,
+            Dbm,
+            Dm,
+            Dsm,
+            Ebm,
+            Em,
+            Fm,
+            Fsm,
+            Gbm,
+            Gm,
+            Gsm,
+            Abm,
+            Am,
+            Asm,
+            Bbm,
+            Bm
+        }
     }
 }

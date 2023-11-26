@@ -1,14 +1,21 @@
-﻿using System.Security;
-
-namespace AbcParser
+﻿namespace AbcParser
 {
+    /// <summary>
+    /// The purpose of this class is to receive an .abc file as input and return it in a easy to use format in the form of a C# class.
+    /// </summary>
     public class AbcParser
     {
+        /// <summary>
+        /// Parses the file at <paramref name="filePath"/> into a Song object.
+        /// </summary>
+        /// <param name="filePath">The file path of the abc file to parse.</param>
+        /// <returns>A Song object, which includes two lists containing the notes and lengths of each note.</returns>
+        /// <exception cref="Exception">Thrown if there are any issues while parsing the contents of <paramref name="filePath"/>.</exception>
         public static Song ParseFromFile(string filePath)
         {
             if (File.Exists(filePath) == false)
             {
-                throw new InvalidDataException("File path does not exist: " + filePath);
+                throw new Exception("File path does not exist: " + filePath);
             }
 
             Song song = new Song();
@@ -104,19 +111,25 @@ namespace AbcParser
             return song;
         }
 
-        public static void ProcessMusicNotes(Song song, string line)
+        /// <summary>
+        /// Processes a line of music data in the abc file, adding data to <paramref name="song"/>.
+        /// </summary>
+        /// <param name="song">The song the data is being parsed into.</param>
+        /// <param name="line">The current line of music data.</param>
+        /// <exception cref="Exception">Thrown if there are any issues while parsing the music data.</exception>
+        private static void ProcessMusicNotes(Song song, string line)
         {
             int lineLength = line.Length;
             int lastProcessedIndex = 0;
 
+            // Track our current set of characters being parsed. This gets reset once a valid note/rest is found/processed.
             string currentNote = string.Empty;
 
             while (lastProcessedIndex < lineLength)
             {
                 char c = line[lastProcessedIndex];
-                // All options for what each character can be:
 
-                // If char is space, process the current rawNote.
+                // If char is space, process the currentNote.
                 if (c == ' ')
                 {
                     ProcessNote(song, currentNote);
@@ -125,7 +138,7 @@ namespace AbcParser
                     continue;
                 }
 
-                // If it's a comment skip the rest of the line, and if it's a back slash, the line is done
+                // If it's a comment skip the remainder of the line, and if it's a back slash, the line is done
                 if (c == '%' || c == '\\')
                 {
                     break;
@@ -135,7 +148,7 @@ namespace AbcParser
                 {
                     if (currentNote != string.Empty)
                     {
-                        // If we already have a rawNote being built, and we run into a new rawNote, we should process the current rawNote first.
+                        // If we already have a currentNote being built, and we run into a new currentNote, we should process the current currentNote first.
                         ProcessNote(song, currentNote);
                         currentNote = string.Empty;
                     }
@@ -145,14 +158,7 @@ namespace AbcParser
                     continue;
                 }
 
-                if (c.IsLengthModifier())
-                {
-                    currentNote += c;
-                    lastProcessedIndex++;
-                    continue;
-                }
-
-                if (c.IsPitchModifier())
+                if (c.IsLengthModifier() || c.IsPitchModifier())
                 {
                     currentNote += c;
                     lastProcessedIndex++;
@@ -167,7 +173,7 @@ namespace AbcParser
                     continue;
                 }
 
-                // Indicates a new bar
+                // Indicates a new bar. We don't care about bars, but it does signify that the note is done and we can process it.
                 if (c == '|')
                 {
                     ProcessNote(song, currentNote);
@@ -178,7 +184,7 @@ namespace AbcParser
 
                 if (c.IsRest())
                 {
-                    // TODO not sure about this one.
+                    // TODO not sure about this one, does it work perfectly?
                     currentNote += c;
                     lastProcessedIndex++;
                     continue;
@@ -186,25 +192,21 @@ namespace AbcParser
 
                 throw new Exception($"Unknown character encountered: {c}");
             }
-
-            Console.WriteLine("Processing music line: ");
-            Console.WriteLine(line);
         }
 
+        /// <summary>
+        /// Processes a string of text reresenting a note, including length and pitch modifiers.
+        /// </summary>
+        /// <param name="song">The song being processed.</param>
+        /// <param name="rawNote">The raw text being parsed. For example, 'e', 'G3/2', '^a2', etc.</param>
+        /// <exception cref="NotImplementedException">This library does not yet handle accidentals in the music data.</exception>
+        /// <exception cref="Exception">Thrown if there are any issues while parsing the raw note.</exception>
         private static void ProcessNote(Song song, string rawNote)
         {
             if (string.IsNullOrWhiteSpace(rawNote))
             {
                 return;
             }
-
-            Console.WriteLine("Processing: " + rawNote);
-
-            // Possible values are:
-            // Single note (remember pitch)
-            // Note suffixed with length modifiers
-            // Note prefixed with length modifiers
-            // Rest
 
             // This will return pitch info: letter note, pitch modifiers, accidentals.
             ProcessedNoteInfo processedNoteInfo = ProcessedNoteInfo.FromRawNote(rawNote);
@@ -229,7 +231,7 @@ namespace AbcParser
 
             string parsedNote = string.IsNullOrEmpty(matchingAccidental) ? processedNoteInfo.Note.ToString() : matchingAccidental;
 
-            if (string.IsNullOrEmpty(processedNoteInfo.Accidentals) == false)
+            if (string.IsNullOrEmpty(processedNoteInfo.AccidentalModifiers) == false)
             {
                 throw new NotImplementedException(); // TODO
             }
@@ -247,7 +249,7 @@ namespace AbcParser
             song.NoteLengths.Add(processedNoteInfo.LengthModifier);
         }
 
-        public static int NoteToNumber(string note)
+        private static int NoteToNumber(string note)
         {
             bool noteIsSharp = note.StartsWith('^');
             bool noteIsFlat = note.StartsWith('_');

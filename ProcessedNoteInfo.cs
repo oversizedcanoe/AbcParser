@@ -1,22 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Metadata;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace AbcParser
+﻿namespace AbcParser
 {
     public class ProcessedNoteInfo
     {
+        /// <summary>
+        /// A single note character representing the note, i.e. 'C' or 'f'.
+        /// </summary>
         public char Note { get; set; }
-        public string Accidentals { get; set; } = string.Empty;
+
+        /// <summary>
+        /// List of abc format accidental modifiers to be applied to this note, i.e. _ ^ = 
+        /// </summary>
+        public string AccidentalModifiers { get; set; } = string.Empty;
+
+        /// <summary>
+        /// List of abc format pitch modifiers to be applied to this note, i.e. , '
+        /// </summary>
         public string PitchModifiers { get; set; } = string.Empty;
 
         private string _lengthModifierString { get; set; } = string.Empty;
+        
+        /// <summary>
+        /// The length of this note compared to the abc file's 'L' header (note length as a proportion of a bar.
+        /// </summary>
         public decimal LengthModifier { get; set; } = 1;
 
+        /// <summary>
+        /// Creates a ProcessedNoteInfo object.
+        /// </summary>
+        /// <param name="rawNote">A string containing all note info pulled from an abc file.</param>
+        /// <returns></returns>
         public static ProcessedNoteInfo FromRawNote(string rawNote)
         {
             ProcessedNoteInfo processedNoteInfo = new ProcessedNoteInfo();
@@ -37,7 +49,7 @@ namespace AbcParser
 
                 if (c.IsAccidental())
                 {
-                    processedNoteInfo.Accidentals += c;
+                    processedNoteInfo.AccidentalModifiers += c;
                     continue;
                 }
 

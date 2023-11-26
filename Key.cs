@@ -1,47 +1,23 @@
-﻿namespace AbcParser
+﻿using static AbcParser.Constants;
+
+namespace AbcParser
 {
+    /// <summary>
+    /// The main purpose of this class is to contain information about the accidentals this key contains.
+    /// </summary>
     public class Key
     {
-        public enum KeyEnum
-        {
-            C,
-            Cs,
-            Db,
-            D,
-            Ds,
-            Eb,
-            E,
-            F,
-            Fs,
-            Gb,
-            G,
-            Gs,
-            Ab,
-            A,
-            As,
-            Bb,
-            B,
-            Cm,
-            Csm,
-            Dbm,
-            Dm,
-            Dsm,
-            Ebm,
-            Em,
-            Fm,
-            Fsm,
-            Gbm,
-            Gm,
-            Gsm,
-            Abm,
-            Am,
-            Asm,
-            Bbm,
-            Bm
-        }
+        public KeyEnum KeyEnum { get; set; }
 
+        /// <summary>
+        /// Creates a Key object from the provided <paramref name="keyEnum"/>.
+        /// </summary>
+        /// <param name="keyEnum">The music Key this entity should represent.</param>
+        /// <exception cref="Exception">Throws an exception if an unknown <paramref name="keyEnum"/> value is passed.</exception>
         public Key(KeyEnum keyEnum)
         {
+            this.KeyEnum = keyEnum;
+
             switch (keyEnum)
             {
                 case KeyEnum.C:
@@ -109,6 +85,12 @@
             }
         }
 
+        /// <summary>
+        /// Creates a Key object from the provided string representation of the key name, considering mode. Note that this method will always return
+        /// the major key for the provided key/mode.
+        /// </summary>
+        /// <param name="key">The music Key this entity should represent.</param>
+        /// <exception cref="Exception">Throws an exception if an unknown <paramref name="key"/> value is passed.</exception>
         public static Key FromString(string key)
         {
             // There is 100% a more efficient way to do this programmatically...
@@ -147,6 +129,9 @@
             }
         }
 
+        /// <summary>
+        /// Contains a list of sharps/flats in this Key.
+        /// </summary>
         public List<string> Accidentals { get; set; }
     }
 }
