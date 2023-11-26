@@ -59,6 +59,7 @@ Note: Your computer may not be capable of `Console.Beep()`-ing at the actual ton
 Also note: BPM is not a required field (for some reason...) in abc files. Because of this, your library should check if the resulting `song.BPM` is 0, and specify a default BPM if this is the case.
 
 ## Todo
+* Square bracket parsing
 * Better error handling
 * Better file validation
 * Add a `ParseFromLines(IEnumerable<string> lines)` method
