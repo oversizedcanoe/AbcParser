@@ -3,7 +3,7 @@ This library is designed to parse an abc file into an easy to use C# object.
 
 > :warning: This library is still under construction! It should work on most basic songs, but is far from feature complete. See the Todo section at the bottom. 
 
-[This file was used as a guide for the abc file standards](https://abcnotation.com/wiki/abc:standard:v2.1)
+[This file was used as a guide for the abc file standards](https://abcnotation.com/wiki/abc:standard:v2.1), as well as [this file](https://thecelticroom.org/abc-music-notation/abc-notation-read-and-write.html).
 
 
 ## Usage
