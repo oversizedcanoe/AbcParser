@@ -29,6 +29,12 @@
             {
                 index++;
 
+                if (string.IsNullOrWhiteSpace(line))
+                {
+                    doneHeaders = true;
+                    continue;
+                }
+
                 if (doneHeaders)
                 {
                     ProcessMusicNotes(song, line);
@@ -119,6 +125,11 @@
         /// <exception cref="Exception">Thrown if there are any issues while parsing the music data.</exception>
         private static void ProcessMusicNotes(Song song, string line)
         {
+            if (string.IsNullOrWhiteSpace(line))
+            {
+                return;
+            }
+
             int lineLength = line.Length;
             int lastProcessedIndex = 0;
 

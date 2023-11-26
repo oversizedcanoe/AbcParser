@@ -45,7 +45,7 @@ namespace AbcParser
         /// <summary>
         /// The Key of the song.
         /// </summary>
-        public Key Key { get; set; }
+        public Key Key { get; set; } = Key.FromString("C");
 
         /// <summary>
         /// Origin of the song.
