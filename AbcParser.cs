@@ -157,13 +157,20 @@
 
                 if (c.IsNote())
                 {
-                    if (currentNote != string.Empty)
+                    if (currentNote != string.Empty && currentNote.All(c => c.IsAccidental()) == false)
                     {
                         // If we already have a currentNote being built, and we run into a new currentNote, we should process the current currentNote first.
                         ProcessNote(song, currentNote);
                         currentNote = string.Empty;
                     }
 
+                    currentNote += c;
+                    lastProcessedIndex++;
+                    continue;
+                }
+
+                if (c.IsAccidental())
+                {
                     currentNote += c;
                     lastProcessedIndex++;
                     continue;
@@ -195,7 +202,6 @@
 
                 if (c.IsRest())
                 {
-                    // TODO not sure about this one, does it work perfectly?
                     currentNote += c;
                     lastProcessedIndex++;
                     continue;
@@ -244,7 +250,7 @@
 
             if (string.IsNullOrEmpty(processedNoteInfo.AccidentalModifiers) == false)
             {
-                throw new NotImplementedException(); // TODO
+                //throw new NotImplementedException(); // TODO
             }
 
             parsedNote += processedNoteInfo.PitchModifiers;
