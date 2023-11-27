@@ -1,7 +1,7 @@
 # AbcParser
 This library is designed to parse an abc file into an easy to use C# object.
 
-> :warning: This library is still under construction! It should work on most basic songs, but is far from feature complete. See the Todo section at the bottom. 
+> :warning: This library is still under construction! It should work on most basic songs, but is far from feature complete. See the Todo section at the bottom. One major missing feature is the ability to play chords -- only single notes are supported for now.
 
 [This file was used as a guide for the abc file standards](https://abcnotation.com/wiki/abc:standard:v2.1), as well as [this file](https://thecelticroom.org/abc-music-notation/abc-notation-read-and-write.html).
 
